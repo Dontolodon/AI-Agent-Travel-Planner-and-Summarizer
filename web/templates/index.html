@@ -1,0 +1,267 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>AI Travel Operations Agent</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel: rgba(255,255,255,.06);
+      --panel2: rgba(255,255,255,.10);
+      --border: rgba(255,255,255,.12);
+      --text:#e5e7eb;
+      --muted: rgba(229,231,235,.72);
+      --accent:#38bdf8;
+      --accent2:#0ea5e9;
+      --ok:#22c55e;
+      --err:#ef4444;
+      --shadow: 0 12px 40px rgba(0,0,0,.45);
+      --radius: 16px;
+    }
+    *{ box-sizing:border-box }
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      color:var(--text);
+      background:
+        radial-gradient(1100px 520px at 20% 10%, rgba(56,189,248,0.18), transparent 55%),
+        radial-gradient(800px 500px at 80% 0%, rgba(34,197,94,0.10), transparent 50%),
+        var(--bg);
+    }
+    .container{ max-width: 980px; margin: 26px auto; padding: 0 18px 40px; }
+    h1{ margin:0; font-size:28px }
+    .subtitle{ margin-top:6px; color:var(--muted); font-size:13px }
+    .tabs{
+      margin-top:16px; display:flex; gap:10px; padding:10px;
+      border-radius: var(--radius); background: rgba(255,255,255,.05);
+      border: 1px solid var(--border); box-shadow: var(--shadow);
+    }
+    .tab-btn{
+      flex:1; border: 1px solid transparent; background: rgba(0,0,0,.22);
+      color: var(--text); padding: 10px 12px; border-radius: 12px;
+      cursor:pointer; font-weight: 800;
+    }
+    .tab-btn.active{
+      background: linear-gradient(180deg, var(--panel2), rgba(0,0,0,.22));
+      border-color: rgba(56,189,248,.45);
+      box-shadow: 0 0 0 3px rgba(56,189,248,.12) inset;
+    }
+    .card{
+      margin-top:16px; background: var(--panel); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: var(--shadow); overflow:hidden;
+    }
+    .card-header{
+      padding:14px 16px; border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, var(--panel2), transparent);
+    }
+    .card-header h2{ margin:0; font-size:16px }
+    .card-body{ padding:16px }
+    label{ display:block; margin: 12px 0 7px; font-size: 13px; font-weight: 700; }
+    input, textarea{
+      width:100%; padding: 10px 12px; border-radius: 12px;
+      border: 1px solid var(--border); background: rgba(0,0,0,.22); color: var(--text);
+    }
+    textarea{ min-height: 110px; resize: vertical }
+    input[type="file"]{ border: 1px dashed rgba(255,255,255,.18); background: rgba(0,0,0,.18); }
+    .row{ display:grid; grid-template-columns:1fr; gap:12px }
+    @media(min-width:720px){ .row.two{ grid-template-columns:1fr 1fr } }
+    .toggle{
+      display:flex; align-items:center; gap:10px; padding: 10px 12px;
+      border-radius: 12px; border: 1px solid var(--border);
+      background: rgba(0,0,0,.18); font-size:13px; color: var(--muted);
+    }
+    button{
+      border:0; padding: 10px 14px; border-radius: 12px; cursor:pointer;
+      font-weight: 900; color:#001018;
+      background: linear-gradient(180deg, var(--accent), var(--accent2));
+      margin-top: 12px;
+    }
+    .msg{
+      margin-top:12px; padding:10px 12px; border-radius: 12px;
+      border:1px solid var(--border); background: rgba(0,0,0,.22); font-size:13px;
+    }
+    .msg.err{ border-color: rgba(239,68,68,.45); color:#fecaca }
+    .msg.ok{ border-color: rgba(34,197,94,.45); color:#bbf7d0 }
+    .msg.notice{ border-color: rgba(56,189,248,.45); color:#bae6fd }
+    pre{
+      white-space: pre-wrap; background: rgba(0,0,0,.35);
+      border: 1px solid var(--border); padding: 12px;
+      border-radius: 12px; margin-top: 12px; font-size: 12.5px;
+    }
+    .section{ display:none }
+    .section.active{ display:block }
+    .overlay{
+      display:none; position:fixed; inset:0; background: rgba(0,0,0,.55);
+      align-items:center; justify-content:center; z-index:9999;
+    }
+    .overlay.show{ display:flex }
+    .overlay-box{
+      padding:20px; border-radius:16px; background:#020617;
+      border:1px solid var(--border); box-shadow: var(--shadow); text-align:center;
+    }
+  </style>
+</head>
+
+<body>
+<div class="overlay" id="overlay">
+  <div class="overlay-box">Working… please wait</div>
+</div>
+
+<div class="container"
+     data-has-plan="{{ 1 if (plan_result or plan_error or plan_notice) else 0 }}"
+     data-has-sum="{{ 1 if (sum_result or sum_error or sum_notice) else 0 }}">
+
+  <h1>AI Travel Operations Agent</h1>
+  <div class="subtitle">Choose a mode: summarize tickets or plan a trip</div>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-sum" type="button">Summarize</button>
+    <button class="tab-btn" id="tab-plan" type="button">Plan Trip</button>
+  </div>
+
+  <!-- Summarize -->
+  <div class="section active" id="sec-sum">
+    <div class="card">
+      <div class="card-header"><h2>Summarize Ticket / PDF</h2></div>
+      <div class="card-body">
+        <form method="post" action="/summarize" enctype="multipart/form-data" class="js-form">
+          <label>Upload file</label>
+          <input type="file" name="file" required>
+
+          <div class="row two">
+            <div>
+              <label>Email (optional)</label>
+              <input type="email" name="email">
+            </div>
+            <div>
+              <label>Send to email?</label>
+              <div class="toggle">
+                <input type="checkbox" name="do_email">
+                <span>Email summary</span>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit">Summarize</button>
+        </form>
+
+        {% if sum_error %}<div class="msg err">{{ sum_error }}</div>{% endif %}
+        {% if sum_notice %}<div class="msg ok">{{ sum_notice }}</div>{% endif %}
+        {% if sum_result %}<pre>{{ sum_result }}</pre>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Plan -->
+  <div class="section" id="sec-plan">
+    <div class="card">
+      <div class="card-header"><h2>Plan a Trip</h2></div>
+      <div class="card-body">
+        <form method="post" action="/plan" class="js-form">
+          <div class="row two">
+            <div>
+              <label>City</label>
+              <input name="city" required>
+            </div>
+            <div>
+              <label>User ID</label>
+              <input name="user_id">
+            </div>
+          </div>
+
+          <div class="row two">
+            <div>
+              <label>Start date</label>
+              <input type="date" name="start" required>
+            </div>
+            <div>
+              <label>Days</label>
+              <input type="number" name="days" value="3" min="1" max="30" required>
+            </div>
+          </div>
+
+          <label>Vibe / preferences</label>
+          <textarea name="vibe"></textarea>
+
+          <div class="toggle">
+            <input type="checkbox" name="fast_mode" checked>
+            <span>Fast mode (recommended)</span>
+          </div>
+
+          <label>Export PDF with place photos?</label>
+          <div class="toggle">
+            <input type="checkbox" name="export_pdf" />
+            <span>Generate PDF (itinerary + photos)</span>
+          </div>
+
+          <div class="row two">
+            <div>
+              <label>Email (optional)</label>
+              <input type="email" name="email">
+            </div>
+            <div>
+              <label>Send to email?</label>
+              <div class="toggle">
+                <input type="checkbox" name="do_email">
+                <span>Email itinerary</span>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit">Generate Itinerary</button>
+        </form>
+
+        {% if plan_error %}<div class="msg err">{{ plan_error }}</div>{% endif %}
+        {% if plan_notice %}<div class="msg ok">{{ plan_notice }}</div>{% endif %}
+
+        {% if pdf_link %}
+          <div class="msg notice">
+            PDF ready:
+            <a href="{{ pdf_link }}" style="color:#38bdf8;">Download PDF</a>
+          </div>
+        {% endif %}
+
+        {% if plan_result %}<pre>{{ plan_result }}</pre>{% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const tabSum = document.getElementById("tab-sum");
+  const tabPlan = document.getElementById("tab-plan");
+  const secSum = document.getElementById("sec-sum");
+  const secPlan = document.getElementById("sec-plan");
+
+  function show(which){
+    if(which === "sum"){
+      tabSum.classList.add("active");
+      tabPlan.classList.remove("active");
+      secSum.classList.add("active");
+      secPlan.classList.remove("active");
+    } else {
+      tabPlan.classList.add("active");
+      tabSum.classList.remove("active");
+      secPlan.classList.add("active");
+      secSum.classList.remove("active");
+    }
+  }
+
+  tabSum.onclick = () => show("sum");
+  tabPlan.onclick = () => show("plan");
+
+  const root = document.querySelector(".container");
+  const hasPlan = root.dataset.hasPlan === "1";
+  const hasSum  = root.dataset.hasSum === "1";
+  if (hasPlan && !hasSum) show("plan");
+  if (hasSum && !hasPlan) show("sum");
+
+  const overlay = document.getElementById("overlay");
+  document.querySelectorAll(".js-form").forEach(f => {
+    f.addEventListener("submit", () => overlay.classList.add("show"));
+  });
+</script>
+</body>
+</html>

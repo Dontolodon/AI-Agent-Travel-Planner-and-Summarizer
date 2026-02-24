@@ -1,0 +1,8 @@
+flask
+werkzeug
+requests
+python-dotenv
+pdfminer.six
+pytesseract
+Pillow
+reportlab

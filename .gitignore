@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+.venv/
+
+# Environment secrets
+config/.env
+
+# Runtime data
+data/*
+!data/.gitkeep
+
+exports/*
+!exports/.gitkeep
+
+logs/*
+!logs/.gitkeep
+uploads/
+
+# OS junk
+.DS_Store
+Thumbs.db

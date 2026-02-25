@@ -38,23 +38,11 @@ It runs inside a Podman container and uses **Ollama (local LLM)** + **tool calls
 
 ---
 
-## Submission Checklist (符合繳交規範)
-
-### Required files
-- Python source code ✅
-- Containerfile ✅
-- requirements.txt ✅
-- RUNME.md (build/run instructions + troubleshooting + bonus features) ✅
-- If RAG: vector DB on disk ✅ (Not applicable; see note below)
-
-### Not doing vector-RAG (Important)
 This project **does NOT implement embedding-based RAG** and **does NOT use a vector database**.  
 It is tool-augmented using:
 - Google Places results (cached to disk)
 - City info + season profile
 - User trip history JSON retrieval (`data/history_trip.json`)
-
-Therefore, there is **no vector DB** to persist.
 
 ---
 

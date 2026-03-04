@@ -43,5 +43,3 @@ It is tool-augmented using:
 - Google Places results (cached to disk)
 - City info + season profile
 - User trip history JSON retrieval (`data/history_trip.json`)
-
----

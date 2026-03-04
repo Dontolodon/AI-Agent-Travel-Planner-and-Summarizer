@@ -45,11 +45,3 @@ It is tool-augmented using:
 - User trip history JSON retrieval (`data/history_trip.json`)
 
 ---
-
-## Quick Start (Podman + Ollama)
-
-> Full step-by-step instructions and screenshots checklist are in `RUNME.md`.
-
-### 1) Build image
-```bash
-podman build -t ai-travel-agent -f Containerfile .
